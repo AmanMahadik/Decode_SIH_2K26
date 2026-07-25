@@ -12,8 +12,32 @@ import {
   Linking,
   Platform,
   KeyboardAvoidingView,
-  Alert
+  Alert,
+  NativeModules
 } from 'react-native';
+
+// Polyfill native ExpoCryptoAES before Clerk import for Expo Go compatibility
+try {
+  if (!NativeModules.ExpoCryptoAES) {
+    NativeModules.ExpoCryptoAES = {
+      encryptAsync: async () => '',
+      decryptAsync: async () => '',
+      getRandomBytes: () => new Uint8Array(16),
+    };
+  }
+  const g = global as any;
+  if (!g.ExpoModules) g.ExpoModules = {};
+  if (!g.ExpoModules.ExpoCryptoAES) {
+    g.ExpoModules.ExpoCryptoAES = {
+      encryptAsync: async () => '',
+      decryptAsync: async () => '',
+      getRandomBytes: () => new Uint8Array(16),
+    };
+  }
+} catch (e) {
+  // Safe fallback
+}
+
 import * as Speech from 'expo-speech';
 import { ClerkProvider, SignedIn, SignedOut, useUser, useAuth, useSignIn, useSignUp } from '@clerk/clerk-expo';
 

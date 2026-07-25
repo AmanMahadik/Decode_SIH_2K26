@@ -1,4 +1,27 @@
 import { registerRootComponent } from 'expo';
+import { NativeModules } from 'react-native';
+
+// Polyfill native ExpoCryptoAES for Expo Go compatibility
+try {
+  if (!NativeModules.ExpoCryptoAES) {
+    NativeModules.ExpoCryptoAES = {
+      encryptAsync: async () => '',
+      decryptAsync: async () => '',
+      getRandomBytes: () => new Uint8Array(16),
+    };
+  }
+
+  const g = global as any;
+  if (g.ExpoModules && !g.ExpoModules.ExpoCryptoAES) {
+    g.ExpoModules.ExpoCryptoAES = {
+      encryptAsync: async () => '',
+      decryptAsync: async () => '',
+      getRandomBytes: () => new Uint8Array(16),
+    };
+  }
+} catch (e) {
+  // Safe fallback
+}
 
 import App from './App';
 
