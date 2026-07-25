@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --kagaz-white: #FAF7F1;
+    --neel-ink: #1B2340;
+    --chakra-blue: #14539A;
+    --haldi-gold: #E8A33D;
+    --tulsi-green: #3B7A57;
+    --sindoor-red: #C1442D;
+    --rekha-grey: #D8D2C4;
+    
+    --text-base-size: 18px;
+  }
+
+  body {
+    background-color: var(--kagaz-white);
+    color: var(--neel-ink);
+    font-family: 'Hind', system-ui, -apple-system, sans-serif;
+    font-size: var(--text-base-size);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.font-display-latin {
+  font-family: 'Fraunces', serif;
+}
+
+.font-display-hindi {
+  font-family: 'Tiro Devanagari Hindi', serif;
+}
+
+.font-body {
+  font-family: 'Hind', sans-serif;
+}
+
+.font-mono-data {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* Color Utility Classes */
+.bg-kagaz { background-color: var(--kagaz-white); }
+.bg-neel { background-color: var(--neel-ink); }
+.bg-chakra { background-color: var(--chakra-blue); }
+.bg-haldi { background-color: var(--haldi-gold); }
+.bg-tulsi { background-color: var(--tulsi-green); }
+.bg-sindoor { background-color: var(--sindoor-red); }
+.bg-rekha { background-color: var(--rekha-grey); }
+
+.text-neel { color: var(--neel-ink); }
+.text-chakra { color: var(--chakra-blue); }
+.text-haldi { color: var(--haldi-gold); }
+.text-tulsi { color: var(--tulsi-green); }
+.text-sindoor { color: var(--sindoor-red); }
+.text-rekha { color: var(--rekha-grey); }
+
+.border-rekha { border-color: var(--rekha-grey); }
+.border-chakra { border-color: var(--chakra-blue); }
+.border-haldi { border-color: var(--haldi-gold); }
+
+/* Touch Target Minimum 48px */
+.touch-target {
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--kagaz-white);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--rekha-grey);
+  border-radius: 999px;
+}

@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "JAN-SAHAYAK",
+    "slug": "jan-sahayak",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAF7F1"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jansahayak.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#FAF7F1"
+      },
+      "package": "com.jansahayak.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

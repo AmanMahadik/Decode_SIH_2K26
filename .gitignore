@@ -1,0 +1,20 @@
+# Node modules & builds
+node_modules/
+.next/
+out/
+build/
+dist/
+.expo/
+*.log
+
+# Environment variables
+.env.local
+.env
+.env.production
+.env.development
+
+# OS & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
