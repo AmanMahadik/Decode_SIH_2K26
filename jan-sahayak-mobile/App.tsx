@@ -15,23 +15,14 @@ import {
 } from 'react-native';
 import * as Speech from 'expo-speech';
 import { ClerkProvider, SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-expo';
-import * as SecureStore from 'expo-secure-store';
 
-// Token cache for Clerk Expo
+// Safe zero-dependency Token cache for Clerk Expo
 const tokenCache = {
   async getToken(key: string) {
-    try {
-      return SecureStore.getItemAsync(key);
-    } catch (err) {
-      return null;
-    }
+    return null;
   },
   async saveToken(key: string, value: string) {
-    try {
-      return SecureStore.setItemAsync(key, value);
-    } catch (err) {
-      return;
-    }
+    return;
   },
 };
 
