@@ -51,7 +51,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
 
-  const GROQ_KEY = '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';
+  const GROQ_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY || '';
 
   const initialWelcome = {
     en: 'Namaste! I am JAN-SAHAYAK, your AI Digital Citizen Assistant. Ask me anything about Indian government schemes.',

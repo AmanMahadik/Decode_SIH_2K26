@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://janadmin:Aman%402006@jansahayak-db.postgres.database.azure.com:5432/postgres?sslmode=require';
+const connectionString = process.env.DATABASE_URL || '';
 
 export const pool = new Pool({
   connectionString,

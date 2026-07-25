@@ -2,8 +2,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import Fuse from 'fuse.js';
 import { query } from './db';
 
-const apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6KtrWjbqkCVbZ0dJe7QnH5qAXN7BNTyWqppud3M8sGAKw';
-const groqApiKey = process.env.GROQ_API_KEY || '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';
+const apiKey = process.env.GEMINI_API_KEY || '';
+const groqApiKey = process.env.GROQ_API_KEY || '';
 
 export interface RAGAnswer {
   answer: string;
