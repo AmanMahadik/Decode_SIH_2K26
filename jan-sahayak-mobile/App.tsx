@@ -14,6 +14,28 @@ import {
   KeyboardAvoidingView
 } from 'react-native';
 import * as Speech from 'expo-speech';
+import { ClerkProvider, SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-expo';
+import * as SecureStore from 'expo-secure-store';
+
+// Token cache for Clerk Expo
+const tokenCache = {
+  async getToken(key: string) {
+    try {
+      return SecureStore.getItemAsync(key);
+    } catch (err) {
+      return null;
+    }
+  },
+  async saveToken(key: string, value: string) {
+    try {
+      return SecureStore.setItemAsync(key, value);
+    } catch (err) {
+      return;
+    }
+  },
+};
+
+const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_c2luY2VyZS1yZWRiaXJkLTQ5LmNsZXJrLmFjY291bnRzLmRldiQ';
 
 // Rajmudra Design System Color Tokens
 const COLORS = {
@@ -35,7 +57,9 @@ interface Message {
   officialLink?: string;
 }
 
-export default function App() {
+function MainApp() {
+  const { user } = useUser();
+  const { signOut } = useAuth();
   const [lang, setLang] = useState<'en' | 'hi' | 'mr'>('en');
   const [activeTab, setActiveTab] = useState<'chat' | 'schemes' | 'saved'>('chat');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -74,7 +98,7 @@ export default function App() {
       eligibility_hi: '10 वर्ष से कम आयु की बालिका के माता-पिता या कानूनी अभिभावक। एक परिवार में अधिकतम 2 खाते।',
       eligibility_mr: '१० वर्षांपेक्षा कमी वयाच्या मुलीचे पालक. एका कुटुंबात जास्तीत जास्त २ खाती उघडता येतात.',
       summary_en: 'High-interest tax-free savings scheme for girl child education with 8.2% compound interest.',
-      summary_hi: '8.2% वार्षिक ब्याज दर के साथ बालिकाओं की शिक्षा और विवाह के लिए टैक्स-फ्री बचत योजना।',
+      summary_hi: '8.2% वार्षिक ब्याज दर के साथ बालिकाओं की शिक्षा और विवाह के लिए सरकारी बचत योजना।',
       summary_mr: 'मुलींच्या शिक्षण व विवाहासाठी ८.२% दरासह सरकारी बचत योजना.',
       official_link: 'https://indiapost.gov.in',
       benefit_amount: '8.2% Interest + Tax Savings'
@@ -135,7 +159,7 @@ export default function App() {
       eligibility_mr: 'लहान व्यावसायिक, दुकानदार, कारागीर आणि बिगर-शेती सूक्ष्म उद्योजक.',
       summary_en: 'Offers collateral-free business loans up to ₹10 Lakh in Shishu, Kishor, and Tarun categories.',
       summary_hi: 'शिशु, किशोर और तरुण श्रेणियों में ₹10 लाख तक का बिना गारंटी ऋण।',
-      summary_mr: 'शिशू, किशोर व तरुण श्रेणी अंतर्गत ₹१० लाखांपर्यंत विनातारण व्यावसायिक कर्ज.',
+      summary_mr: 'शिशू, किशोर व तरुण श्रेणी अंतर्गत ₹१० लाखांपर्यंत विनातारण कर्ज.',
       official_link: 'https://mudra.org.in',
       benefit_amount: 'Up to ₹10,00,000 Loan'
     }
@@ -286,7 +310,7 @@ User Question: "${queryText}"`;
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        {/* Top Header Bar with Notch Protection */}
+        {/* Top Header Bar with Clerk User & Notch Protection */}
         <View style={styles.header}>
           <View style={styles.brandRow}>
             <View style={styles.badgeIcon}>
@@ -295,25 +319,33 @@ User Question: "${queryText}"`;
             <View>
               <Text style={styles.headerTitle}>JAN-SAHAYAK</Text>
               <Text style={styles.headerSubtitle}>
-                {lang === 'hi' ? 'डिजिटल नागरिक सहायक' : lang === 'mr' ? 'डिजिटल नागरिक सहाय्यक' : 'Digital Citizen Assistant'}
+                {user ? `👤 ${user.primaryEmailAddress?.emailAddress.split('@')[0]}` : 'Digital Citizen Assistant'}
               </Text>
             </View>
           </View>
 
-          {/* Language Selector Chips */}
-          <View style={styles.langContainer}>
-            {(['en', 'hi', 'mr'] as const).map(l => (
-              <TouchableOpacity
-                key={l}
-                onPress={() => setLang(l)}
-                style={[styles.langBtn, lang === l && styles.langBtnActive]}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.langText, lang === l && styles.langTextActive]}>
-                  {l === 'en' ? 'EN' : l === 'hi' ? 'हिंदी' : 'मराठी'}
-                </Text>
+          {/* Language Selector Chips & Clerk Auth Logout */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={styles.langContainer}>
+              {(['en', 'hi', 'mr'] as const).map(l => (
+                <TouchableOpacity
+                  key={l}
+                  onPress={() => setLang(l)}
+                  style={[styles.langBtn, lang === l && styles.langBtnActive]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.langText, lang === l && styles.langTextActive]}>
+                    {l === 'en' ? 'EN' : l === 'hi' ? 'हिंदी' : 'मराठी'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <SignedIn>
+              <TouchableOpacity onPress={() => signOut()} style={styles.logoutBtn}>
+                <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
-            ))}
+            </SignedIn>
           </View>
         </View>
 
@@ -501,6 +533,15 @@ User Question: "${queryText}"`;
   );
 }
 
+// Clerk Authentication Wrapper for Mobile
+export default function App() {
+  return (
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+      <MainApp />
+    </ClerkProvider>
+  );
+}
+
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
@@ -546,6 +587,8 @@ const styles = StyleSheet.create({
   langBtnActive: { backgroundColor: COLORS.chakra },
   langText: { fontSize: 12, fontWeight: 'bold', color: COLORS.neel },
   langTextActive: { color: COLORS.white },
+  logoutBtn: { backgroundColor: COLORS.sindoor, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
+  logoutText: { color: COLORS.white, fontSize: 11, fontWeight: 'bold' },
 
   body: { flex: 1, backgroundColor: COLORS.kagaz },
   chatScroll: { flex: 1, paddingHorizontal: 16 },
@@ -591,7 +634,7 @@ const styles = StyleSheet.create({
   },
   sendText: { color: COLORS.white, fontWeight: 'bold', fontSize: 14 },
 
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.neel, mb: 16 },
+  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.neel, marginBottom: 16 },
   schemeCard: { backgroundColor: COLORS.white, borderRadius: 18, padding: 18, marginBottom: 16, borderWidth: 1, borderColor: COLORS.rekha },
   categoryPill: { backgroundColor: '#EBF3FB', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 8 },
   categoryText: { fontSize: 10, fontWeight: 'bold', color: COLORS.chakra },
