@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: COLORS.chakra,
     alignItems: 'center',
-    justify.content: 'center',
+    justifyContent: 'center',
     marginRight: 8,
   },
   micBtnActive: { backgroundColor: COLORS.sindoor },
