@@ -14,19 +14,6 @@ import {
   KeyboardAvoidingView
 } from 'react-native';
 import * as Speech from 'expo-speech';
-import { ClerkProvider, SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-expo';
-
-// Safe zero-dependency Token cache for Clerk Expo
-const tokenCache = {
-  async getToken(key: string) {
-    return null;
-  },
-  async saveToken(key: string, value: string) {
-    return;
-  },
-};
-
-const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_c2luY2VyZS1yZWRiaXJkLTQ5LmNsZXJrLmFjY291bnRzLmRldiQ';
 
 // Rajmudra Design System Color Tokens
 const COLORS = {
@@ -48,9 +35,7 @@ interface Message {
   officialLink?: string;
 }
 
-function MainApp() {
-  const { user } = useUser();
-  const { signOut } = useAuth();
+export default function App() {
   const [lang, setLang] = useState<'en' | 'hi' | 'mr'>('en');
   const [activeTab, setActiveTab] = useState<'chat' | 'schemes' | 'saved'>('chat');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -301,7 +286,7 @@ User Question: "${queryText}"`;
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        {/* Top Header Bar with Clerk User & Notch Protection */}
+        {/* Top Header Bar with Notch Protection */}
         <View style={styles.header}>
           <View style={styles.brandRow}>
             <View style={styles.badgeIcon}>
@@ -310,33 +295,25 @@ User Question: "${queryText}"`;
             <View>
               <Text style={styles.headerTitle}>JAN-SAHAYAK</Text>
               <Text style={styles.headerSubtitle}>
-                {user ? `👤 ${user.primaryEmailAddress?.emailAddress.split('@')[0]}` : 'Digital Citizen Assistant'}
+                {lang === 'hi' ? 'डिजिटल नागरिक सहायक' : lang === 'mr' ? 'डिजिटल नागरिक सहाय्यक' : 'Digital Citizen Assistant'}
               </Text>
             </View>
           </View>
 
-          {/* Language Selector Chips & Clerk Auth Logout */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <View style={styles.langContainer}>
-              {(['en', 'hi', 'mr'] as const).map(l => (
-                <TouchableOpacity
-                  key={l}
-                  onPress={() => setLang(l)}
-                  style={[styles.langBtn, lang === l && styles.langBtnActive]}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.langText, lang === l && styles.langTextActive]}>
-                    {l === 'en' ? 'EN' : l === 'hi' ? 'हिंदी' : 'मराठी'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <SignedIn>
-              <TouchableOpacity onPress={() => signOut()} style={styles.logoutBtn}>
-                <Text style={styles.logoutText}>Logout</Text>
+          {/* Language Selector Chips */}
+          <View style={styles.langContainer}>
+            {(['en', 'hi', 'mr'] as const).map(l => (
+              <TouchableOpacity
+                key={l}
+                onPress={() => setLang(l)}
+                style={[styles.langBtn, lang === l && styles.langBtnActive]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.langText, lang === l && styles.langTextActive]}>
+                  {l === 'en' ? 'EN' : l === 'hi' ? 'हिंदी' : 'मराठी'}
+                </Text>
               </TouchableOpacity>
-            </SignedIn>
+            ))}
           </View>
         </View>
 
@@ -524,15 +501,6 @@ User Question: "${queryText}"`;
   );
 }
 
-// Clerk Authentication Wrapper for Mobile
-export default function App() {
-  return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
-      <MainApp />
-    </ClerkProvider>
-  );
-}
-
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
@@ -578,8 +546,6 @@ const styles = StyleSheet.create({
   langBtnActive: { backgroundColor: COLORS.chakra },
   langText: { fontSize: 12, fontWeight: 'bold', color: COLORS.neel },
   langTextActive: { color: COLORS.white },
-  logoutBtn: { backgroundColor: COLORS.sindoor, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
-  logoutText: { color: COLORS.white, fontSize: 11, fontWeight: 'bold' },
 
   body: { flex: 1, backgroundColor: COLORS.kagaz },
   chatScroll: { flex: 1, paddingHorizontal: 16 },
