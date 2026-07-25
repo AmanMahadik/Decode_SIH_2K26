@@ -5,6 +5,8 @@
   "dependencies": {
     "@clerk/clerk-expo": "^2.6.2",
     "expo": "~54.0.0",
+    "expo-auth-session": "^57.0.5",
+    "expo-crypto": "^57.0.1",
     "expo-speech": "~14.0.8",
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "^57.0.2",
