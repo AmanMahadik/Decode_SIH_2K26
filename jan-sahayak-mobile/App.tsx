@@ -11,7 +11,8 @@ import {
   ActivityIndicator,
   Linking,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Alert
 } from 'react-native';
 import * as Speech from 'expo-speech';
 
@@ -37,18 +38,25 @@ interface Message {
 
 export default function App() {
   const [lang, setLang] = useState<'en' | 'hi' | 'mr'>('en');
-  const [activeTab, setActiveTab] = useState<'chat' | 'schemes' | 'saved'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'voice' | 'schemes' | 'login'>('chat');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+
+  // Authentication State
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   const GROQ_KEY = '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';
 
   const initialWelcome = {
-    en: 'Namaste! I am JAN-SAHAYAK, your AI Digital Citizen Assistant for ALL Indian Government Schemes.',
-    hi: 'नमस्ते! मैं जन-सहायक हूँ, सभी भारतीय सरकारी योजनाओं के लिए आपका एआई नागरिक सहायक।',
-    mr: 'नमस्ते! मी जन-सहायक आहे, सर्व भारतीय सरकारी योजनांसाठी तुमचा एआय नागरिक सहाय्यक.'
+    en: 'Namaste! I am JAN-SAHAYAK, your AI Digital Citizen Assistant. Ask me anything about Indian government schemes.',
+    hi: 'नमस्ते! मैं जन-सहायक हूँ, आपका एआई डिजिटल नागरिक सहायक। सरकारी योजनाओं के बारे में कुछ भी पूछें।',
+    mr: 'नमस्ते! मी जन-सहायक आहे, तुमचा एआय डिजिटल नागरिक सहाय्यक. सरकारी योजनांबद्दल प्रश्न विचारा.'
   };
 
   useEffect(() => {
@@ -71,11 +79,7 @@ export default function App() {
       title_mr: 'सुकन्या समृद्धी योजना',
       category: 'Girl Child & Education',
       eligibility_en: 'Parents or legal guardians of a girl child below 10 years of age. Maximum 2 accounts per family.',
-      eligibility_hi: '10 वर्ष से कम आयु की बालिका के माता-पिता या कानूनी अभिभावक। एक परिवार में अधिकतम 2 खाते।',
-      eligibility_mr: '१० वर्षांपेक्षा कमी वयाच्या मुलीचे पालक. एका कुटुंबात जास्तीत जास्त २ खाती उघडता येतात.',
       summary_en: 'High-interest tax-free savings scheme for girl child education with 8.2% compound interest.',
-      summary_hi: '8.2% वार्षिक ब्याज दर के साथ बालिकाओं की शिक्षा और विवाह के लिए सरकारी बचत योजना।',
-      summary_mr: 'मुलींच्या शिक्षण व विवाहासाठी ८.२% दरासह सरकारी बचत योजना.',
       official_link: 'https://indiapost.gov.in',
       benefit_amount: '8.2% Interest + Tax Savings'
     },
@@ -86,11 +90,7 @@ export default function App() {
       title_mr: 'पीएम-किसान सन्मान निधी योजना',
       category: 'Agriculture & Farming',
       eligibility_en: 'Small and marginal farmers holding cultivable land up to 2 hectares in their name.',
-      eligibility_hi: 'अपनी भूमि पर खेती करने वाले 2 हेक्टेयर तक की जोत वाले छोटे और सीमांत किसान।',
-      eligibility_mr: '२ हेक्टरपर्यंत शेतीजमीन असलेले छोटे आणि अल्पभूधारक शेतकरी.',
       summary_en: 'Provides ₹6,000 per year in three equal installments of ₹2,000 directly into eligible farmer bank accounts.',
-      summary_hi: 'पात्र किसान परिवारों के बैंक खाते में सीधा ₹6,000 प्रति वर्ष 3 समान किस्तों में प्रदान किया जाता है।',
-      summary_mr: 'पात्र शेतकरी कुटुंबांच्या बँक खात्यात थेट दरवर्षी ₹६,००० तीन हप्त्यांमध्ये जमा केले जातात.',
       official_link: 'https://pmkisan.gov.in',
       benefit_amount: '₹6,000 / year'
     },
@@ -101,11 +101,7 @@ export default function App() {
       title_mr: 'आयुष्मान भारत - पीएम जन आरोग्य योजना',
       category: 'Health & Wellness',
       eligibility_en: 'Families listed in SECC 2011 database, kutcha house dwellers, SC/ST, informal workers.',
-      eligibility_hi: 'SECC 2011 डेटाबेस में सूचीबद्ध परिवार, कच्चे मकानों में रहने वाले ग्रामीण परिवार।',
-      eligibility_mr: 'SECC 2011 यादीतील कुटुंबे, कच्च्या घरात राहणारी कुटुंबे आणि आर्थिकदृष्ट्या दुर्बल नागरिक.',
       summary_en: 'Offers cashless health coverage of up to ₹5 Lakh per family per year for hospitalization.',
-      summary_hi: 'प्रति परिवार प्रति वर्ष ₹5 लाख तक का कैशलेस स्वास्थ्य बीमा प्रदान करता है।',
-      summary_mr: 'दरवर्षी प्रति कुटुंब ₹५ लाखांपर्यंतचे रोखरहित आरोग्य संरक्षण दुय्यम आणि तृतीयक उपचारांसाठी मिळते.',
       official_link: 'https://pmjay.gov.in',
       benefit_amount: '₹5,00,000 Cover'
     },
@@ -116,11 +112,7 @@ export default function App() {
       title_mr: 'प्रधानमंत्री आवास योजना (PMAY)',
       category: 'Housing & Shelter',
       eligibility_en: 'Families with annual income up to ₹6 Lakh without a pucca house in India.',
-      eligibility_hi: 'वार्षिक आय ₹6 लाख तक के EWS/LIG वर्ग। भारत में पक्का मकान नहीं होना चाहिए।',
-      eligibility_mr: 'वार्षिक उत्पन्न ₹६ लाखांपर्यंतचे कुटुंब. स्वतःचे पक्के घर नसणे आवश्यक.',
       summary_en: 'Provides financial assistance and interest subsidy up to ₹2.67 Lakh for building or buying a home.',
-      summary_hi: 'पक्का मकान बनाने या खरीदने के लिए ₹2.67 लाख तक की सब्सिडी और वित्तीय सहायता दी जाती है।',
-      summary_mr: 'पक्के घर बांधण्यासाठी किंवा खरेदी करण्यासाठी ₹२.६७ लाखांपर्यंत व्याज सबसिडी मिळते.',
       official_link: 'https://pmaymis.gov.in',
       benefit_amount: 'Up to ₹2,67,000 Subsidy'
     },
@@ -131,15 +123,41 @@ export default function App() {
       title_mr: 'प्रधानमंत्री मुद्रा योजना',
       category: 'Business & Microfinance',
       eligibility_en: 'Small business owners, shopkeepers, artisans, and micro-enterprises needing loans.',
-      eligibility_hi: 'छोटे व्यापारी, दुकानदार, कारीगर और गैर-कृषि सूक्ष्म उद्यमों के उद्यमी।',
-      eligibility_mr: 'लहान व्यावसायिक, दुकानदार, कारागीर आणि बिगर-शेती सूक्ष्म उद्योजक.',
       summary_en: 'Offers collateral-free business loans up to ₹10 Lakh in Shishu, Kishor, and Tarun categories.',
-      summary_hi: 'शिशु, किशोर और तरुण श्रेणियों में ₹10 लाख तक का बिना गारंटी ऋण।',
-      summary_mr: 'शिशू, किशोर व तरुण श्रेणी अंतर्गत ₹१० लाखांपर्यंत विनातारण कर्ज.',
       official_link: 'https://mudra.org.in',
       benefit_amount: 'Up to ₹10,00,000 Loan'
     }
   ];
+
+  const handleLogin = () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Login Required', 'Please enter your email and password');
+      return;
+    }
+    setIsLoggedIn(true);
+    setUserEmail(email);
+    setActiveTab('chat');
+    Alert.alert('Welcome!', `Logged in successfully as ${email}`);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserEmail('');
+    setEmail('');
+    setPassword('');
+  };
+
+  const toggleVoiceListen = () => {
+    if (isListening) {
+      setIsListening(false);
+    } else {
+      setIsListening(true);
+      Speech.speak('Listening to your query...', {
+        language: lang === 'hi' ? 'hi-IN' : lang === 'mr' ? 'mr-IN' : 'en-IN',
+        onDone: () => setIsListening(false)
+      });
+    }
+  };
 
   const handleSend = async (textToSend?: string) => {
     const queryText = textToSend || inputQuery;
@@ -295,25 +313,37 @@ User Question: "${queryText}"`;
             <View>
               <Text style={styles.headerTitle}>JAN-SAHAYAK</Text>
               <Text style={styles.headerSubtitle}>
-                {lang === 'hi' ? 'डिजिटल नागरिक सहायक' : lang === 'mr' ? 'डिजिटल नागरिक सहाय्यक' : 'Digital Citizen Assistant'}
+                {isLoggedIn ? `👤 ${userEmail.split('@')[0]}` : 'Digital Citizen Assistant'}
               </Text>
             </View>
           </View>
 
-          {/* Language Selector Chips */}
-          <View style={styles.langContainer}>
-            {(['en', 'hi', 'mr'] as const).map(l => (
-              <TouchableOpacity
-                key={l}
-                onPress={() => setLang(l)}
-                style={[styles.langBtn, lang === l && styles.langBtnActive]}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.langText, lang === l && styles.langTextActive]}>
-                  {l === 'en' ? 'EN' : l === 'hi' ? 'हिंदी' : 'मराठी'}
-                </Text>
+          {/* Language Selector Chips & Login/Logout Button */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={styles.langContainer}>
+              {(['en', 'hi', 'mr'] as const).map(l => (
+                <TouchableOpacity
+                  key={l}
+                  onPress={() => setLang(l)}
+                  style={[styles.langBtn, lang === l && styles.langBtnActive]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.langText, lang === l && styles.langTextActive]}>
+                    {l === 'en' ? 'EN' : l === 'hi' ? 'हिंदी' : 'मराठी'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {isLoggedIn ? (
+              <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+                <Text style={styles.logoutText}>Logout</Text>
               </TouchableOpacity>
-            ))}
+            ) : (
+              <TouchableOpacity onPress={() => setActiveTab('login')} style={styles.loginHeaderBtn}>
+                <Text style={styles.loginHeaderText}>Login</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -365,8 +395,16 @@ User Question: "${queryText}"`;
                 )}
               </ScrollView>
 
-              {/* Chat Input Bar */}
+              {/* Chat Input Bar with Voice Mic Button */}
               <View style={styles.inputContainer}>
+                <TouchableOpacity
+                  onPress={toggleVoiceListen}
+                  style={[styles.micBtn, isListening && styles.micBtnActive]}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.micBtnText}>🎤</Text>
+                </TouchableOpacity>
+
                 <TextInput
                   value={inputQuery}
                   onChangeText={setInputQuery}
@@ -374,6 +412,7 @@ User Question: "${queryText}"`;
                   placeholderTextColor="#888"
                   style={styles.textInput}
                 />
+
                 <TouchableOpacity
                   onPress={() => handleSend()}
                   style={styles.sendButton}
@@ -383,7 +422,77 @@ User Question: "${queryText}"`;
                 </TouchableOpacity>
               </View>
             </View>
-          ) : activeTab === 'schemes' ? (
+          ) : activeTab === 'voice' ? (
+            /* Fullscreen Voice Enabled Mode Screen */
+            <View style={styles.voiceModeContainer}>
+              <View style={styles.voiceOrbOuter}>
+                <TouchableOpacity
+                  onPress={toggleVoiceListen}
+                  style={[styles.voiceOrbInner, isListening && styles.voiceOrbActive]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.voiceIconText}>🎙️</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.voiceTitle}>
+                {isListening ? 'Listening to your Voice...' : 'Tap Mic to Speak in Hindi, Marathi or English'}
+              </Text>
+
+              <Text style={styles.voiceSubtitle}>
+                Voice-First AI Citizen Assistant for scheme eligibility & application steps.
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => handleTTS('Namaste! I am JAN-SAHAYAK, your voice digital citizen assistant. How can I help you today?')}
+                style={styles.voiceSpeakDemoBtn}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.voiceSpeakDemoText}>🔊 Test Audio Speech Output</Text>
+              </TouchableOpacity>
+            </View>
+          ) : activeTab === 'login' ? (
+            /* Mobile Auth / Login Screen */
+            <ScrollView
+              style={{ flex: 1, paddingHorizontal: 20 }}
+              contentContainerStyle={{ paddingVertical: 32, alignItems: 'center' }}
+            >
+              <View style={styles.loginCard}>
+                <Text style={styles.loginTitle}>Citizen Portal Login</Text>
+                <Text style={styles.loginSubtitle}>Sign in to save bookmarks and receive scheme deadline reminders.</Text>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Email Address</Text>
+                  <TextInput
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="e.g. citizen@gmail.com"
+                    placeholderTextColor="#888"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.formInput}
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Password</Text>
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="••••••••"
+                    placeholderTextColor="#888"
+                    secureTextEntry
+                    style={styles.formInput}
+                  />
+                </View>
+
+                <TouchableOpacity onPress={handleLogin} style={styles.submitLoginBtn} activeOpacity={0.8}>
+                  <Text style={styles.submitLoginText}>Sign In to JAN-SAHAYAK ➔</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          ) : (
+            /* Directory Tab */
             <ScrollView
               style={{ flex: 1, paddingHorizontal: 16 }}
               contentContainerStyle={{ paddingVertical: 16, paddingBottom: 32 }}
@@ -391,7 +500,6 @@ User Question: "${queryText}"`;
             >
               <Text style={styles.sectionTitle}>Government Scheme Directory</Text>
 
-              {/* Scheme Card 1 */}
               <View style={styles.schemeCard}>
                 <View style={styles.categoryPill}>
                   <Text style={styles.categoryText}>GIRL CHILD & EDUCATION</Text>
@@ -409,7 +517,6 @@ User Question: "${queryText}"`;
                 </TouchableOpacity>
               </View>
 
-              {/* Scheme Card 2 */}
               <View style={styles.schemeCard}>
                 <View style={styles.categoryPill}>
                   <Text style={styles.categoryText}>AGRICULTURE & FARMING</Text>
@@ -426,39 +533,6 @@ User Question: "${queryText}"`;
                   <Text style={styles.applyBtnText}>Apply at Official Portal ➔</Text>
                 </TouchableOpacity>
               </View>
-
-              {/* Scheme Card 3 */}
-              <View style={styles.schemeCard}>
-                <View style={styles.categoryPill}>
-                  <Text style={styles.categoryText}>HEALTH & WELLNESS</Text>
-                </View>
-                <Text style={styles.cardTitle}>Ayushman Bharat (PM-JAY)</Text>
-                <Text style={styles.cardSummary}>
-                  Cashless health insurance cover of up to ₹5 Lakh per family per year.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => Linking.openURL('https://pmjay.gov.in')}
-                  style={styles.applyBtn}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.applyBtnText}>Apply at Official Portal ➔</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          ) : (
-            <ScrollView
-              style={{ flex: 1, paddingHorizontal: 16 }}
-              contentContainerStyle={{ paddingVertical: 16, paddingBottom: 32 }}
-              showsVerticalScrollIndicator={false}
-            >
-              <Text style={styles.sectionTitle}>Saved Bookmarks & Deadlines</Text>
-              <View style={styles.savedCard}>
-                <Text style={styles.cardTitle}>Sukanya Samriddhi Yojana</Text>
-                <Text style={{ color: COLORS.sindoor, fontWeight: 'bold', marginVertical: 4 }}>
-                  ⚠️ Deadline in 10 days!
-                </Text>
-                <Text style={styles.cardSummary}>8.2% Interest • Girl Child Education</Text>
-              </View>
             </ScrollView>
           )}
         </View>
@@ -470,9 +544,15 @@ User Question: "${queryText}"`;
             style={[styles.navItem, activeTab === 'chat' && styles.navItemActive]}
             activeOpacity={0.7}
           >
-            <Text style={[styles.navText, activeTab === 'chat' && styles.navTextActive]}>
-              💬 Chat
-            </Text>
+            <Text style={[styles.navText, activeTab === 'chat' && styles.navTextActive]}>💬 Chat</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setActiveTab('voice')}
+            style={[styles.navItem, activeTab === 'voice' && styles.navItemActive]}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.navText, activeTab === 'voice' && styles.navTextActive]}>🎙️ Voice</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -480,19 +560,15 @@ User Question: "${queryText}"`;
             style={[styles.navItem, activeTab === 'schemes' && styles.navItemActive]}
             activeOpacity={0.7}
           >
-            <Text style={[styles.navText, activeTab === 'schemes' && styles.navTextActive]}>
-              🌐 Directory
-            </Text>
+            <Text style={[styles.navText, activeTab === 'schemes' && styles.navTextActive]}>🌐 Directory</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setActiveTab('saved')}
-            style={[styles.navItem, activeTab === 'saved' && styles.navItemActive]}
+            onPress={() => setActiveTab('login')}
+            style={[styles.navItem, activeTab === 'login' && styles.navItemActive]}
             activeOpacity={0.7}
           >
-            <Text style={[styles.navText, activeTab === 'saved' && styles.navTextActive]}>
-              🔖 Saved
-            </Text>
+            <Text style={[styles.navText, activeTab === 'login' && styles.navTextActive]}>🔑 Auth</Text>
           </TouchableOpacity>
         </View>
 
@@ -517,10 +593,6 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.rekha,
     backgroundColor: COLORS.kagaz,
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
   },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   badgeIcon: {
@@ -546,6 +618,10 @@ const styles = StyleSheet.create({
   langBtnActive: { backgroundColor: COLORS.chakra },
   langText: { fontSize: 12, fontWeight: 'bold', color: COLORS.neel },
   langTextActive: { color: COLORS.white },
+  loginHeaderBtn: { backgroundColor: COLORS.chakra, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
+  loginHeaderText: { color: COLORS.white, fontSize: 12, fontWeight: 'bold' },
+  logoutBtn: { backgroundColor: COLORS.sindoor, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
+  logoutText: { color: COLORS.white, fontSize: 12, fontWeight: 'bold' },
 
   body: { flex: 1, backgroundColor: COLORS.kagaz },
   chatScroll: { flex: 1, paddingHorizontal: 16 },
@@ -571,6 +647,17 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.rekha,
     alignItems: 'center',
   },
+  micBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.chakra,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  micBtnActive: { backgroundColor: COLORS.sindoor },
+  micBtnText: { fontSize: 20 },
   textInput: {
     flex: 1,
     backgroundColor: COLORS.kagaz,
@@ -591,6 +678,27 @@ const styles = StyleSheet.create({
   },
   sendText: { color: COLORS.white, fontWeight: 'bold', fontSize: 14 },
 
+  /* Fullscreen Voice Mode Styles */
+  voiceModeContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+  voiceOrbOuter: { width: 140, height: 140, borderRadius: 70, backgroundColor: '#EBF3FB', alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  voiceOrbInner: { width: 100, height: 100, borderRadius: 50, backgroundColor: COLORS.chakra, alignItems: 'center', justifyContent: 'center' },
+  voiceOrbActive: { backgroundColor: COLORS.sindoor },
+  voiceIconText: { fontSize: 44 },
+  voiceTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.neel, textAlign: 'center', marginBottom: 8 },
+  voiceSubtitle: { fontSize: 14, color: COLORS.neel, opacity: 0.7, textAlign: 'center', marginBottom: 24 },
+  voiceSpeakDemoBtn: { backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.chakra, borderRadius: 16, paddingHorizontal: 20, paddingVertical: 12 },
+  voiceSpeakDemoText: { color: COLORS.chakra, fontWeight: 'bold', fontSize: 14 },
+
+  /* Mobile Auth / Login Screen Styles */
+  loginCard: { width: '100%', backgroundColor: COLORS.white, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: COLORS.rekha, elevation: 4 },
+  loginTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.neel, marginBottom: 6, textAlign: 'center' },
+  loginSubtitle: { fontSize: 13, color: COLORS.neel, opacity: 0.7, marginBottom: 24, textAlign: 'center' },
+  formGroup: { width: '100%', marginBottom: 16 },
+  label: { fontSize: 12, fontWeight: 'bold', color: COLORS.neel, uppercase: 'true', marginBottom: 6 },
+  formInput: { width: '100%', backgroundColor: COLORS.kagaz, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, color: COLORS.neel, borderWidth: 1, borderColor: COLORS.rekha },
+  submitLoginBtn: { backgroundColor: COLORS.chakra, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+  submitLoginText: { color: COLORS.white, fontWeight: 'bold', fontSize: 15 },
+
   sectionTitle: { fontSize: 20, fontWeight: 'bold', color: COLORS.neel, marginBottom: 16 },
   schemeCard: { backgroundColor: COLORS.white, borderRadius: 18, padding: 18, marginBottom: 16, borderWidth: 1, borderColor: COLORS.rekha },
   categoryPill: { backgroundColor: '#EBF3FB', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 8 },
@@ -599,8 +707,6 @@ const styles = StyleSheet.create({
   cardSummary: { fontSize: 14, color: COLORS.neel, opacity: 0.8, lineHeight: 20, marginBottom: 14 },
   applyBtn: { backgroundColor: COLORS.chakra, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   applyBtnText: { color: COLORS.white, fontWeight: 'bold', fontSize: 14 },
-
-  savedCard: { backgroundColor: COLORS.white, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: COLORS.rekha },
 
   bottomNav: {
     flexDirection: 'row',
@@ -611,13 +717,9 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 24 : 16,
     paddingHorizontal: 12,
     elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
   },
   navItem: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 16 },
   navItemActive: { backgroundColor: '#EBF3FB' },
-  navText: { fontSize: 14, fontWeight: 'bold', color: COLORS.neel },
+  navText: { fontSize: 13, fontWeight: 'bold', color: COLORS.neel },
   navTextActive: { color: COLORS.chakra },
 });
